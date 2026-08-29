@@ -1,0 +1,12 @@
+<html lanf="ko">
+<head><meta charset="UFT-8"><title>BBS</title></head>
+<body>
+    <h1>게시판</h1>
+<a href = "/new">글쓰기</a>
+<ul>
+    {% for post in posts %}
+    <li><a href = "/posts/{{post.id}}">{{post.title}}</a>- {{post.created_at}}</li>
+    {% endfor %}
+</ul>
+</body>
+</html>
