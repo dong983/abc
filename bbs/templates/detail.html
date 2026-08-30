@@ -5,6 +5,9 @@
     <h1>{{post.title}}</h1>
     <p>{{post.content}}</p>
     <p>{{post.created_at}}</p>
-    <a href="/">목록으로</a>
+    <a href="/posts/{{ post. id}}/edit">수정</a>
+    <form method="POST" action="/posts/{{ post.id }}/delete" style="display:inline">
+    <button type="submit">삭제</button>
+</form>
 </body>
 </html>

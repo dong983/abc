@@ -1,0 +1,11 @@
+<html lang="ko">
+<head><meta charset="UTF-8"><title>글 수정</title></head>
+<body>
+    <h1>글 수정</h1>
+    <form method="POST" action="/posts/{{ post.id }}/edit">
+    <input name="title" value="{{ post.title }}" required><br>
+    <textarea name="content" required>{{ post.content }}</textarea><br>
+    <button type="submit">저장</button>
+    </form>
+</body>
+</html>
