@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>공공데이터 대시보드</title>
+  <style>
+    body { font-family: sans-serif; max-width: 640px; margin: 40px auto; padding: 0 16px; color: #1f2937; }
+    nav { margin-bottom: 16px; font-size: 14px; }
+    nav a, nav span { margin-right: 12px; }
+    a.back { display: inline-block; margin-bottom: 20px; color: #1d4ed8; text-decoration: none; }
+    .badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 12px; margin-left: 8px; vertical-align: middle; }
+    .badge.live { background: #dcfce7; color: #166534; }
+    .badge.sample { background: #fef3c7; color: #92400e; }
+    select { padding: 6px 10px; margin: 12px 0; border: 1px solid #d1d5db; border-radius: 6px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    th, td { text-align: left; padding: 8px; border-bottom: 1px solid #e5e7eb; }
+    .bar-track { background: #f1f5f9; border-radius: 4px; height: 14px; width: 100%; }
+    .bar-fill { background: #1d4ed8; height: 14px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <nav>
+    {% if session.get("username") %}
+      <span>{{ session.username }}님</span>
+      <form method="POST" action="/logout" style="display:inline">
+        <button type="submit">로그아웃</button>
+      </form>
+    {% else %}
+      <a href="/login">로그인</a>
+      <a href="/signup">회원가입</a>
+    {% endif %}
+    <a href="/dashboard">대시보드</a>
+  </nav>
+
+  <a class="back" href="/">← 게시판으로</a>
+  <h1>미세먼지 대시보드
+    <span class="badge {{ source }}">{{ "실시간" if source == "live" else "샘플 데이터" }}</span>
+  </h1>
+
+  <form method="GET" action="/dashboard">
+    <select name="sido" onchange="this.form.submit()">
+      {% for name in ["인천", "서울", "부산", "경기", "대구"] %}
+        <option value="{{ name }}" {{ "selected" if name == sido else "" }}>{{ name }}</option>
+      {% endfor %}
+    </select>
+  </form>
+
+  <table>
+    <tr><th>측정소</th><th>미세먼지(PM10)</th><th>등급</th><th></th></tr>
+    {% for row in rows %}
+    <tr>
+      <td>{{ row.station }}</td>
+      <td>{{ row.pm10 }}</td>
+      <td>{{ row.grade }}</td>
+      <td style="width:40%">
+        <div class="bar-track">
+          <div class="bar-fill" style="width: {{ row.pm10 }}%"></div>
+        </div>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="4">데이터가 없습니다.</td></tr>
+    {% endfor %}
+  </table>
+</body>
+</html>

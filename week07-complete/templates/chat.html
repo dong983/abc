@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>실시간 채팅</title>
+  <style>
+    body { font-family: sans-serif; max-width: 640px; margin: 40px auto; padding: 0 16px; color: #1f2937; }
+    a.back { display: inline-block; margin-bottom: 20px; color: #1d4ed8; text-decoration: none; }
+    #messages { list-style: none; padding: 0; height: 320px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; }
+    #messages li { padding: 4px 0; }
+    #messages .username { font-weight: 700; margin-right: 6px; }
+    form.send { display: flex; gap: 8px; margin-top: 12px; }
+    form.send input { flex: 1; padding: 8px; }
+    form.send button { padding: 8px 16px; }
+  </style>
+</head>
+<body>
+  <a class="back" href="/">← 게시판으로</a>
+  <h1>실시간 채팅</h1>
+
+  <ul id="messages">
+    {% for m in messages %}
+    <li><span class="username">{{ m.username }}</span>{{ m.content }}</li>
+    {% endfor %}
+  </ul>
+
+  <form class="send" id="send-form">
+    <input type="text" id="message-input" placeholder="메시지를 입력하세요" autocomplete="off" required>
+    <button type="submit">전송</button>
+  </form>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+  <script>
+    const socket = io();
+    const messages = document.getElementById("messages");
+    const form = document.getElementById("send-form");
+    const input = document.getElementById("message-input");
+
+    function appendMessage(username, content) {
+      const li = document.createElement("li");
+      const span = document.createElement("span");
+      span.className = "username";
+      span.textContent = username;
+      li.appendChild(span);
+      li.appendChild(document.createTextNode(content));
+      messages.appendChild(li);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    socket.on("new_message", (data) => {
+      appendMessage(data.username, data.content);
+    });
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const content = input.value.trim();
+      if (!content) return;
+      socket.emit("send_message", { content });
+      input.value = "";
+    });
+
+    messages.scrollTop = messages.scrollHeight;
+  </script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ post.title }}</title>
+  <style>
+    body { font-family: sans-serif; max-width: 640px; margin: 40px auto; padding: 0 16px; color: #1f2937; }
+    nav { margin-bottom: 16px; font-size: 14px; }
+    nav a, nav span { margin-right: 12px; }
+    a.back { display: inline-block; margin-bottom: 20px; color: #1d4ed8; text-decoration: none; }
+    .meta { color: #94a3b8; font-size: 13px; }
+    .content { line-height: 1.7; white-space: pre-wrap; margin-top: 16px; }
+    .actions { margin-top: 24px; }
+    .actions a, .actions button { margin-right: 8px; }
+    button.delete { color: #b91c1c; background: none; border: 1px solid #fecaca; border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+    .comments { list-style: none; padding: 0; }
+    .comments li { padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
+    .comments textarea { width: 100%; min-height: 60px; padding: 8px; box-sizing: border-box; }
+  </style>
+</head>
+<body>
+  <nav>
+    {% if session.get("username") %}
+      <span>{{ session.username }}님{% if session.get("role") == "admin" %} <b>(관리자)</b>{% endif %}</span>
+      <form method="POST" action="/logout" style="display:inline">
+        <button type="submit">로그아웃</button>
+      </form>
+    {% else %}
+      <a href="/login">로그인</a>
+      <a href="/signup">회원가입</a>
+    {% endif %}
+    <a href="/dashboard">대시보드</a>
+    <a href="/chat">채팅</a>
+  </nav>
+
+  <a class="back" href="/">← 목록으로</a>
+  <h1>{% if post.is_notice %}📌 {% endif %}{{ post.title }}</h1>
+  <p class="meta">{{ post.username or "익명" }} · {{ post.created_at }}</p>
+  <p class="content">{{ post.content }}</p>
+
+  <div class="actions">
+    {% if session.get("user_id") == post.user_id %}
+      <a href="/posts/{{ post.id }}/edit">수정</a>
+    {% endif %}
+    {% if session.get("user_id") == post.user_id or session.get("role") == "admin" %}
+      <form method="POST" action="/posts/{{ post.id }}/delete" style="display:inline">
+        <button class="delete" type="submit">삭제</button>
+      </form>
+    {% endif %}
+    {% if session.get("role") == "admin" %}
+      <form method="POST" action="/posts/{{ post.id }}/notice" style="display:inline">
+        <button type="submit">{{ "공지 해제" if post.is_notice else "공지 고정" }}</button>
+      </form>
+    {% endif %}
+  </div>
+
+  <hr>
+  <h2>댓글 ({{ comments|length }})</h2>
+  <ul class="comments">
+    {% for c in comments %}
+    <li>
+      <span class="meta">{{ c.username or "익명" }} · {{ c.created_at }}</span>
+      <p>{{ c.content }}</p>
+      {% if session.get("user_id") == c.user_id or session.get("role") == "admin" %}
+      <form method="POST" action="/comments/{{ c.id }}/delete" style="display:inline">
+        <button class="delete" type="submit">삭제</button>
+      </form>
+      {% endif %}
+    </li>
+    {% else %}
+    <li>아직 댓글이 없습니다.</li>
+    {% endfor %}
+  </ul>
+
+  {% if session.get("user_id") %}
+  <form method="POST" action="/posts/{{ post.id }}/comments">
+    <textarea name="content" placeholder="댓글을 입력하세요" required></textarea>
+    <button type="submit">댓글 작성</button>
+  </form>
+  {% else %}
+  <p><a href="/login">로그인</a>하면 댓글을 쓸 수 있습니다.</p>
+  {% endif %}
+</body>
+</html>

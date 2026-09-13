@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>회원가입</title>
+  <style>
+    body { font-family: sans-serif; max-width: 640px; margin: 40px auto; padding: 0 16px; color: #1f2937; }
+    input { width: 100%; box-sizing: border-box; padding: 10px; margin-bottom: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-family: inherit; font-size: 15px; }
+    button { padding: 10px 18px; background: #1d4ed8; color: white; border: none; border-radius: 6px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>회원가입</h1>
+  {% if error %}<p style="color:red">{{ error }}</p>{% endif %}
+  <form method="POST">
+    <input name="username" placeholder="아이디" required>
+    <input name="password" type="password" placeholder="비밀번호" required>
+    <button type="submit">가입</button>
+  </form>
+  <p><a href="/login">이미 계정이 있나요? 로그인</a></p>
+</body>
+</html>

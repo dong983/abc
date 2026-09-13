@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>나만의 BBS</title>
+  <style>
+    body { font-family: sans-serif; max-width: 640px; margin: 40px auto; padding: 0 16px; color: #1f2937; }
+    h1 { margin-bottom: 8px; }
+    nav { margin-bottom: 16px; font-size: 14px; }
+    nav a, nav span { margin-right: 12px; }
+    a.new-link { display: inline-block; margin-bottom: 20px; }
+    form.search { margin-bottom: 16px; }
+    form.search input { padding: 6px 8px; width: 60%; }
+    form.search button { padding: 6px 12px; }
+    form.search a { margin-left: 8px; font-size: 13px; }
+    ul { list-style: none; padding: 0; }
+    li { padding: 12px 0; border-bottom: 1px solid #e5e7eb; }
+    li a { text-decoration: none; color: #1d4ed8; font-weight: 600; }
+    .meta { color: #94a3b8; font-size: 13px; margin-left: 8px; }
+    .notice { color: #b45309; font-weight: 700; margin-right: 6px; }
+  </style>
+</head>
+<body>
+  <nav>
+    {% if session.get("username") %}
+      <span>{{ session.username }}님{% if session.get("role") == "admin" %} <b>(관리자)</b>{% endif %}</span>
+      <form method="POST" action="/logout" style="display:inline">
+        <button type="submit">로그아웃</button>
+      </form>
+    {% else %}
+      <a href="/login">로그인</a>
+      <a href="/signup">회원가입</a>
+    {% endif %}
+    <a href="/dashboard">대시보드</a>
+    <a href="/chat">채팅</a>
+  </nav>
+
+  <h1>게시판</h1>
+
+  <form method="GET" action="/" class="search">
+    <input type="text" name="q" value="{{ q or '' }}" placeholder="제목·내용 검색">
+    <button type="submit">검색</button>
+    {% if q %}<a href="/">전체보기</a>{% endif %}
+  </form>
+
+  <a class="new-link" href="/new">글쓰기</a>
+  <ul>
+    {% for post in posts %}
+    <li>
+      {% if post.is_notice %}<span class="notice">📌 공지</span>{% endif %}
+      <a href="/posts/{{ post.id }}">{{ post.title }}</a>
+      <span class="meta">{{ post.username or "익명" }} · {{ post.created_at }}</span>
+    </li>
+    {% else %}
+    <li>{% if q %}"{{ q }}"에 해당하는 글이 없습니다.{% else %}아직 글이 없습니다. 첫 글을 써 보세요.{% endif %}</li>
+    {% endfor %}
+  </ul>
+</body>
+</html>

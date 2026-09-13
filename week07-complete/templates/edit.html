@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>글 수정</title>
+  <style>
+    body { font-family: sans-serif; max-width: 640px; margin: 40px auto; padding: 0 16px; color: #1f2937; }
+    nav { margin-bottom: 16px; font-size: 14px; }
+    nav a, nav span { margin-right: 12px; }
+    a.back { display: inline-block; margin-bottom: 20px; color: #1d4ed8; text-decoration: none; }
+    input, textarea { width: 100%; box-sizing: border-box; padding: 10px; margin-bottom: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-family: inherit; font-size: 15px; }
+    textarea { height: 160px; resize: vertical; }
+    button { padding: 10px 18px; background: #1d4ed8; color: white; border: none; border-radius: 6px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <nav>
+    {% if session.get("username") %}
+      <span>{{ session.username }}님</span>
+      <form method="POST" action="/logout" style="display:inline">
+        <button type="submit">로그아웃</button>
+      </form>
+    {% else %}
+      <a href="/login">로그인</a>
+      <a href="/signup">회원가입</a>
+    {% endif %}
+  </nav>
+
+  <a class="back" href="/posts/{{ post.id }}">← 취소하고 상세로</a>
+  <h1>글 수정</h1>
+  <form method="POST" action="/posts/{{ post.id }}/edit">
+    <input name="title" value="{{ post.title }}" required>
+    <textarea name="content" required>{{ post.content }}</textarea>
+    <button type="submit">저장</button>
+  </form>
+</body>
+</html>

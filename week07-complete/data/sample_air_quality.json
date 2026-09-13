@@ -1,0 +1,12 @@
+{
+    "response": {
+        "body": {
+            "items": [
+                {"station_name": "종로구", "pm10Value": "38", "pm25Value": "19","khaiGrade": "2"},
+                {"station_name": "강남구", "pm10Value": "52", "pm25Value": "27","khaiGrade": "3"}, 
+                {"station_name": "마포구", "pm10Value": "29", "pm25Value": "14","khaiGrade": "1"}, 
+                {"station_name": "송파구", "pm10Value": "61", "pm25Value": "33","khaiGrade": "3"}
+            ]
+        }
+    }
+}
