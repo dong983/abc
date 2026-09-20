@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>반장 학교생활 도우미</title>
+    <style>
+        html {
+            min-height: 100%;
+            background-color: #eef1f7;
+            background-image:
+                radial-gradient(circle, rgba(59, 108, 246, 0.14) 1px, transparent 1.5px),
+                radial-gradient(ellipse 900px 520px at 108% -8%, rgba(59, 108, 246, 0.22), transparent 58%),
+                radial-gradient(ellipse 720px 420px at -8% 108%, rgba(122, 90, 248, 0.16), transparent 58%),
+                radial-gradient(ellipse 480px 320px at 92% 88%, rgba(46, 139, 87, 0.12), transparent 58%);
+            background-size: 22px 22px, auto, auto, auto;
+            background-attachment: fixed;
+        }
+        body { font-family: -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; max-width: 760px; margin: 0 auto; padding: 16px; background: transparent; color: #222; min-height: 100vh; }
+        a.back { display: inline-block; margin-bottom: 8px; color: #3b6cf6; text-decoration: none; font-size: 14px; }
+        h1 { font-size: 1.5rem; }
+        section { background: #fff; border-radius: 10px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+        h2 { font-size: 1.1rem; margin: 0 0 10px; }
+        input[type=text], textarea { width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid #ccd; border-radius: 6px; font: inherit; }
+        textarea { min-height: 80px; }
+        button { margin-top: 8px; padding: 8px 14px; border: 0; border-radius: 6px; background: #3b6cf6; color: #fff; font: inherit; cursor: pointer; }
+        button.sub { background: #888; }
+        .box { white-space: pre-wrap; padding: 10px; border-radius: 6px; margin-top: 10px; }
+        .official { background: #eef6ee; border-left: 4px solid #2e8b57; }
+        .ai { background: #f3f0fb; border-left: 4px solid #7a5af8; }
+        .label { font-size: .8rem; font-weight: bold; margin-bottom: 4px; }
+        .error { background: #fdecec; border-left: 4px solid #d33; }
+        #chatHistory { height: 260px; overflow-y: auto; border: 1px solid #dde; border-radius: 6px; padding: 8px; background: #fafbff; }
+        #chatHistory div { margin-bottom: 6px; white-space: pre-wrap; }
+        .chat-row { display: flex; gap: 6px; }
+        .chat-row input { flex: 1; }
+    </style>
+</head>
+<body>
+    <a class="back" href="/">← 게시판으로</a>
+    <h1>🏫 반장 학교생활 도우미</h1>
+
+    <section>
+        <h2>🍚 오늘의 급식 (나이스 공공데이터 + AI 브리핑)</h2>
+        <form method="post">
+            <input type="text" name="school_name" value="{{ school_name }}" placeholder="학교 이름 (예: 경기고등학교)">
+            <button type="submit" name="action" value="meal">급식 조회</button>
+        </form>
+        {% if errors.meal %}<div class="box error">{{ errors.meal }}</div>{% endif %}
+        {% if meal %}
+            <div class="box official">
+                <div class="label">📋 나이스 공식 원문 — {{ meal_school }} · {{ meal.meal_name }} ({{ meal.date }})</div>
+                {{ meal.menu }}
+                {% if meal.calorie %}
+칼로리: {{ meal.calorie }}{% endif %}
+            </div>
+            {% if ai_meal %}
+                <div class="box ai">
+                    <div class="label">🤖 AI 브리핑 (원문을 해석한 참고용 설명 — 틀릴 수 있어요)</div>
+                    {{ ai_meal }}
+                </div>
+            {% endif %}
+            {% if errors.ai_meal %}<div class="box error">{{ errors.ai_meal }}</div>{% endif %}
+        {% endif %}
+    </section>
+
+    <section>
+        <h2>📢 공지 요약 (단일 대화)</h2>
+        <form method="post">
+            <textarea name="notice_text" placeholder="공지사항을 붙여넣으세요">{{ notice_text }}</textarea>
+            <button type="submit" name="action" value="notice">[일정 / 할 일 / 준비물]로 정리</button>
+        </form>
+        {% if errors.notice %}<div class="box error">{{ errors.notice }}</div>{% endif %}
+        {% if summary %}<div class="box ai"><div class="label">🤖 AI 요약</div>{{ summary }}</div>{% endif %}
+    </section>
+
+    <section>
+        <h2>📷 사진 분석 (시간표·안내문)</h2>
+        <form method="post" enctype="multipart/form-data">
+            <input type="file" name="photo" accept="image/png,image/jpeg">
+            <button type="submit" name="action" value="image">사진에서 일정·준비물 읽기</button>
+        </form>
+        {% if errors.image %}<div class="box error">{{ errors.image }}</div>{% endif %}
+        {% if image_result %}<div class="box ai"><div class="label">🤖 AI가 읽은 내용 (사진과 꼭 대조하세요)</div>{{ image_result }}</div>{% endif %}
+    </section>
+
+    <section>
+        <h2>💬 반장 챗봇 (연속 대화)</h2>
+        <div id="chatHistory">
+            {% for m in history %}
+                <div><b>{{ '나' if m.role == 'user' else '반장' }}:</b> {{ m.content }}</div>
+            {% else %}
+                <div id="emptyNote">[대화를 시작해보세요. 이전 대화를 기억해요.]</div>
+            {% endfor %}
+        </div>
+        <div class="chat-row">
+            <input type="text" id="chatInput" placeholder="질문을 입력하세요" onkeydown="if (event.key === 'Enter') sendChat()">
+            <button type="button" onclick="sendChat()">전송</button>
+            <button type="button" class="sub" onclick="resetChat()">초기화</button>
+        </div>
+    </section>
+
+    <script>
+        const box = document.getElementById("chatHistory");
+
+        function addMessage(who, text) {
+            const note = document.getElementById("emptyNote");
+            if (note) note.remove();
+            const row = document.createElement("div");
+            const name = document.createElement("b");
+            name.textContent = who + ": ";
+            row.append(name, document.createTextNode(text));
+            box.appendChild(row);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        async function postChat(message) {
+            const formData = new FormData();
+            formData.append("message", message);
+            const res = await fetch("/chatbot/chat", { method: "POST", body: formData });
+            return (await res.json()).reply;
+        }
+
+        async function sendChat() {
+            const input = document.getElementById("chatInput");
+            const message = input.value.trim();
+            if (!message) return;
+            input.value = "";
+            addMessage("나", message);
+            addMessage("반장", await postChat(message));
+        }
+
+        async function resetChat() {
+            await postChat("초기화");
+            box.innerHTML = "<div>[대화가 초기화되었습니다.]</div>";
+        }
+
+        box.scrollTop = box.scrollHeight;
+    </script>
+</body>
+</html>
